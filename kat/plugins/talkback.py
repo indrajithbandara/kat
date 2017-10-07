@@ -1,6 +1,6 @@
 from disco.bot import Plugin
 from kat.utils import katconfig
-from kat.utils import helpers
+from kat.utils import apihelpers
 from time import sleep
 
 
@@ -29,7 +29,7 @@ class TalkBack(Plugin):
 
                 event.message.delete()
 
-                helpers.start_typing(self.bot, event.channel)
+                apihelpers.start_typing(self.bot, event.channel)
 
                 sleep(0.01 * len(content) + 1.2)
 

@@ -1,2 +1,11 @@
-def start_typing(bot, channel):
-    bot.client.api.channels_typing(channel.id)
+def find(predicate, collection):
+    for item in collection:
+        if predicate(collection):
+            return item
+    return None
+
+
+def find_all(predicate, collection):
+    for item in collection:
+        if predicate(collection):
+            yield item
