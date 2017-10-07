@@ -1,0 +1,6 @@
+token: 'YOUR_BOT_TOKEN_HERE'
+
+bot:
+  plugins:
+    - kat.plugin1
+    - kat.plugin2
