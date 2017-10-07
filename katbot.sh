@@ -1,7 +1,7 @@
 #! /bin/bash
 
 bot_cfg_file='disco_config.yaml'
-kat_cfg_file='kat_config.yaml'
+kat_cfg_file='kat_config.json'
 
 py_36="/usr/bin/env python3.6"
 dependencies=(disco-py pyyaml)
