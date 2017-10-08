@@ -14,7 +14,7 @@ class React(Plugin):
         regex_list = katconfig.config.react_triggers
         for regex in regex_list:
             # Compile the regex, use multiline and case insensitive matching.
-            self.trigger_words.append(re.compile(f'^.*%s.*$' % regex, re.I | re.M))
+            self.trigger_words.append(re.compile(r'^.*\b%s\b.*?$' % regex, re.I | re.M))
 
     @Plugin.listen('Ready')
     def on_ready(self, _):
@@ -42,6 +42,7 @@ class React(Plugin):
         self.__re_cache()
 
     def __re_cache(self):
+        """Regathers the list of emojis we can use."""
         emotes_to_find = []
         emotes_to_find.extend(self.emote_names)
 
@@ -59,6 +60,8 @@ class React(Plugin):
         if event.message.author != self.state.me:
             for regex in self.trigger_words:
                 if regex.match(event.message.content):
+                    self.log.debug(f'Matched message "{event.message.content}" on pattern "{regex}". Adding reaction.')
+
                     event.message.add_reaction(random.choice(self.reaction_emotes))
                     return
 
