@@ -1,7 +1,7 @@
 from disco.bot import Plugin
 
 from disco.types import message
-from kat.utils import apihelpers
+from kat.utils import helpers
 from kat.utils import katconfig
 from time import sleep
 
@@ -10,12 +10,10 @@ import random
 
 class Me(Plugin):
     @Plugin.command('nick')
+    @helpers.is_commander
+    @helpers.is_in_guild
     def nick(self, event):
         """Changes my nickname on the current guild you run this from."""
-
-        # If in a private message, or not a commander.
-        if not event.guild or event.author not in katconfig.config.commanders:
-            return
 
         args = ' '.join(event.args) if event.args else None
         my_member = event.guild.get_member(self.state.me)
@@ -28,6 +26,7 @@ class Me(Plugin):
         my_member.set_nickname(args)
 
     @Plugin.command('nickall')
+    @helpers.is_commander
     def nick_all(self, event):
         """Changes my nickname on all guilds I am in."""
 
@@ -41,7 +40,7 @@ class Me(Plugin):
         event.msg.delete()
 
         # Start typing to show working
-        apihelpers.start_typing(self.bot, event.channel)
+        utils.start_typing(self.bot, event.channel)
 
         successes = 0
         total = 0
@@ -61,11 +60,8 @@ class Me(Plugin):
         reply_message.delete()
 
     @Plugin.command('whereami')
+    @helpers.is_commander
     def where_am_i(self, event):
-        """Sends you a list of all guilds I am in."""
-        # If not a commander.
-        if event.author not in katconfig.config.commanders:
-            return
 
         guild_count = len(self.state.guilds.values())
 
@@ -104,7 +100,10 @@ class Me(Plugin):
         event.channel.send_message(embed=embed)
 
     @Plugin.command('perms')
+    @helpers.is_commander
+    @helpers.is_in_guild
     def perms(self, event):
-        guild = event.guild
+        pass
+
 
 
