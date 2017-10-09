@@ -40,7 +40,7 @@ class Me(Plugin):
         event.msg.delete()
 
         # Start typing to show working
-        utils.start_typing(self.bot, event.channel)
+        helpers.start_typing(self.bot, event.channel)
 
         successes = 0
         total = 0
@@ -102,8 +102,9 @@ class Me(Plugin):
     @Plugin.command('perms')
     @helpers.is_commander
     @helpers.is_in_guild
+    @helpers.Debugging.dump_args
     def perms(self, event):
-        pass
+        pass#me = event.me
 
 
 

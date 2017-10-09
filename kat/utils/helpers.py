@@ -101,10 +101,14 @@ def is_commander(func):
             return
 
         if author in katconfig.config.commanders:
-            __logger.debug(f'In is_commander decorator for {func.__name__}; author {author} IS commander.')
+            __logger.debug(f'In is_commander decorator for {func.__module__}.{func.__name__}; author {author} IS '
+                           f'commander.')
             func(self, event, *args, **kwargs)
         else:
-            __logger.debug(f'In is_commander decorator for {func.__name__}; author {author} IS NOT commander.')
+            __logger.debug(f'In is_commander decorator for {func.__module__}.{func.__name__}; author {author} NOT '
+                           f'commander.')
+
+    pred.__name__ = func.__name__
 
     return pred
 
@@ -123,9 +127,57 @@ def is_in_guild(func):
             return
 
         if event.guild is not None:
-            __logger.debug(f'In is_guild decorator for {func.__name__}; message WAS in valid guild.')
+            __logger.debug(f'In is_guild decorator for {func.__module__}.{func.__name__}; message IS in valid guild.')
             func(self, event, *args, **kwargs)
         else:
-            __logger.debug(f'In is_guild decorator for {func.__name__}; message WAS NOT in valid guild.')
+            __logger.debug(f'In is_guild decorator for {func.__module__}.{func.__name__}; message NOT in valid guild.')
+
+    pred.__name__ = func.__name__
 
     return pred
+
+###############################################################################
+#                                                                             #
+# USEFUL STUFF FOR DEBUGGING                                                  #
+#                                                                             #
+###############################################################################
+
+
+class Debugging(object):
+    def __init__(self): raise NotImplementedError()
+
+    def __new__(cls, *args, **kwargs): raise NotImplementedError()
+
+    @staticmethod
+    def dump_args(func):
+        def pred(*args, **kwargs):
+            output = f'Parameter dump for {func.__module__}.{func.__name__}(...)\n'
+
+            is_first = True
+
+            param_no = 0
+            for arg in args:
+                if is_first:
+                    is_first = False
+                else:
+                    output += '\n'
+
+                output += f'  #{param_no} :: {type(arg)} :: \n'
+
+                # Find the longest member name, and use that as our fixed width
+                longest = 0
+                for member in dir(arg):
+                    if longest < len(member):
+                        longest = len(member)
+
+                for member in dir(arg):
+                    output += f'    - {member:<{longest}} - {type(arg.__getattribute__(member))}\n'
+
+                param_no += 1
+            logging.info(output)
+
+            func(*args, **kwargs)
+
+        pred.__name__ = func.__name__
+
+        return pred
