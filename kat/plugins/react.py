@@ -1,3 +1,4 @@
+from disco.api.http import APIException
 from disco.bot import Plugin
 from kat.utils import katconfig
 
@@ -57,12 +58,25 @@ class React(Plugin):
 
     @Plugin.listen('MessageCreate')
     def on_message(self, event):
-        if event.message.author != self.state.me:
+        # Don't react in any channels with "roleplay" in the name.
+        if any(term in event.channel.name.lower() for term in ('rp', 'roleplay')):
+            # Don't react
+            self.log.debug(f'Channel seems to be for roleplay ({event.channel.name}) so I am gonna ignore it.')
+
+        elif 'serious' in event.channel.name.lower():
+            # Don't react
+            self.log.debug(f'Channel has word \'serious\' in name ({event.channel.name}), so I am gonna ignore it.')
+
+        elif event.message.author != self.state.me:
             for regex in self.trigger_words:
                 if regex.match(event.message.content):
-                    self.log.debug(f'Matched message "{event.message.content}" on pattern "{regex}". Adding reaction.')
 
-                    event.message.add_reaction(random.choice(self.reaction_emotes))
-                    return
+                    if random.random() < 0.2:
+                        self.log.debug(f'Matched message "{event.message.content}" on pattern "{regex}". Adding react.')
 
-
+                        try:
+                            event.message.add_reaction(random.choice(self.reaction_emotes))
+                        except APIException:
+                            self.log.warning('I don\'t seem to have permission to react in '
+                                             f'{event.guild.name}#{event.channel.name}.')
+                        return

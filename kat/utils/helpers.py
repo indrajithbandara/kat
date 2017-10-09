@@ -20,7 +20,7 @@ def find(predicate, collection):
     We return the first match only, or None if no match exists.
     """
     for item in collection:
-        if predicate(collection):
+        if predicate(item):
             return item
     return None
 
@@ -33,7 +33,7 @@ def find_all(predicate, collection):
     """
 
     for item in collection:
-        if predicate(collection):
+        if predicate(item):
             yield item
 
 
@@ -109,7 +109,7 @@ def is_commander(func):
                            f'commander.')
 
     pred.__name__ = func.__name__
-
+    pred.__doc__ = func.__doc__
     return pred
 
 
@@ -133,8 +133,9 @@ def is_in_guild(func):
             __logger.debug(f'In is_guild decorator for {func.__module__}.{func.__name__}; message NOT in valid guild.')
 
     pred.__name__ = func.__name__
-
+    pred.__doc__ = func.__doc__
     return pred
+
 
 ###############################################################################
 #                                                                             #
@@ -144,40 +145,51 @@ def is_in_guild(func):
 
 
 class Debugging(object):
-    def __init__(self): raise NotImplementedError()
+    def __init__(self):
+        raise NotImplementedError()
 
-    def __new__(cls, *args, **kwargs): raise NotImplementedError()
+    def __new__(cls, *args, **kwargs):
+        raise NotImplementedError()
 
     @staticmethod
-    def dump_args(func):
+    def dump_args_decorator(func):
         def pred(*args, **kwargs):
-            output = f'Parameter dump for {func.__module__}.{func.__name__}(...)\n'
-
-            is_first = True
-
-            param_no = 0
-            for arg in args:
-                if is_first:
-                    is_first = False
-                else:
-                    output += '\n'
-
-                output += f'  #{param_no} :: {type(arg)} :: \n'
-
-                # Find the longest member name, and use that as our fixed width
-                longest = 0
-                for member in dir(arg):
-                    if longest < len(member):
-                        longest = len(member)
-
-                for member in dir(arg):
-                    output += f'    - {member:<{longest}} - {type(arg.__getattribute__(member))}\n'
-
-                param_no += 1
-            logging.info(output)
-
+            logging.info(f'Parameter dump for {func.__module__}.{func.__name__}(...)')
+            Debugging.dump_args(*args, **kwargs)
             func(*args, **kwargs)
 
         pred.__name__ = func.__name__
-
+        pred.__doc__ = func.__doc__
         return pred
+
+    # noinspection PyBroadException
+    def dump_args(*args, **kwargs):
+
+        output = '\n'
+        is_first = True
+
+        param_no = 0
+        for arg in args:
+            if is_first:
+                is_first = False
+            else:
+                output += '\n'
+
+            output += f'  #{param_no} :: {type(arg)} :: {str(arg)}\n'
+
+            # Find the longest member name, and use that as our fixed width
+            longest = 0
+            for member in dir(arg):
+                if longest < len(member):
+                    longest = len(member)
+
+            for member in dir(arg):
+                output += f'    - {member:<{longest}} - '
+
+                try:
+                    output += f'{type(arg.__getattribute__(member))}\n'
+                except:
+                    output += '<Unavailable>\n'
+
+            param_no += 1
+        logging.info(output)

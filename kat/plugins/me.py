@@ -1,10 +1,9 @@
+from disco.api.http import APIException
 from disco.bot import Plugin
-
 from disco.types import message
 from kat.utils import helpers
 from kat.utils import katconfig
 from time import sleep
-
 import random
 
 
@@ -62,6 +61,9 @@ class Me(Plugin):
     @Plugin.command('whereami')
     @helpers.is_commander
     def where_am_i(self, event):
+        """Shows a list of guilds I am a member in."""
+
+        event.msg.delete()
 
         guild_count = len(self.state.guilds.values())
 
@@ -102,9 +104,71 @@ class Me(Plugin):
     @Plugin.command('perms')
     @helpers.is_commander
     @helpers.is_in_guild
-    @helpers.Debugging.dump_args
     def perms(self, event):
-        pass#me = event.me
+        """
+        Shows the permissions for the guild you are calling this from for my user.
 
+        If I don't have permission to send messages in the channel you call this from, I will just DM you
+        instead (hopefully).
+        """
 
+        event.msg.delete()
+
+        my_perms = event.guild.get_permissions(self.state.me)
+        my_perms_dict = my_perms.to_dict()
+        my_perms_value = my_perms.value
+
+        role_ids = event.guild.get_member(self.state.me).roles
+        roles = []
+        for role_id in event.guild.roles.keys():
+            if role_id in role_ids:
+                roles.append(event.guild.roles[role_id])
+
+        embed = message.MessageEmbed()
+
+        embed.title = f'Permissions for {event.guild.name}'
+        embed.description = 'The contents of this embed'
+        embed.set_footer(text=f'Current bitfield permissions value: 2:{bin(my_perms_value)}; '
+                              f'8:{oct(my_perms_value)}; 10:{my_perms_value}; 16:{hex(my_perms_value)}  .')
+
+        main_perms_str = ''
+
+        for key in my_perms_dict.keys():
+            clean_key = key.title()
+            clean_key = clean_key.replace('_', ' ')
+
+            main_perms_str += (f'{":white_check_mark:" if my_perms_dict[key] else ":red_circle:"}'
+                               f' {clean_key}\n')
+
+        embed.add_field(name='Overall permissions', value=main_perms_str, inline=False)
+
+        for key in my_perms_dict.keys():
+
+            role_list = ''
+
+            is_first = True
+
+            for role in roles:
+                if role.permissions.to_dict()[key]:
+                    if is_first:
+                        is_first = False
+                    else:
+                        role_list += '\n'
+
+                    ''.title()
+
+                    role_list += f'- {role.name}'
+
+            if not role_list:
+                role_list = '- @\u200beveryone'
+
+            clean_key = key.title()
+            clean_key = clean_key.replace('_', ' ')
+
+            embed.add_field(name=f'{clean_key}', value=role_list, inline=True)
+
+        try:
+            event.channel.send_message(embed=embed)
+        except APIException:  # e.g. missing permissions
+            event.author.open_dm().send_message(embed=embed)
 
