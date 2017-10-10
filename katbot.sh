@@ -1,5 +1,7 @@
 #! /bin/bash
 
+cd "$(dirname ${BASH_SOURCE[0]})"
+
 bot_cfg_file='disco_config.yaml'
 kat_cfg_file='kat_config.json'
 
