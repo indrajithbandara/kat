@@ -1,6 +1,11 @@
-token: 'YOUR_BOT_TOKEN_HERE'
+token: 'Your bot token goes here!'
+
+log_level: 'info'
 
 bot:
   plugins:
-    - kat.plugin1
-    - kat.plugin2
+    - kat.plugins.talkback
+    - kat.plugins.react
+    - kat.plugins.me
+    - kat.plugins.help
+    - kat.plugins.meta

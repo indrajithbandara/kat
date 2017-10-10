@@ -1,5 +1,5 @@
 import json
-from kat.utils.helpers import is_pythonic_ident
+from kat.utils.helpers import is_python_identifier
 import logging
 import os
 
@@ -20,7 +20,7 @@ def __load_config():
 
             for key in _config.keys():
                 # Ensure that none of the keys contain strange or illegal characters.
-                if not is_pythonic_ident(key):
+                if not is_python_identifier(key):
                     logger.error(f'In \'{cfg_file}\', key \'{key}\' contains illegal characters, or is a Python3.6 '
                                  'reserve word. Please fix this and try again!')
                     exit(2)

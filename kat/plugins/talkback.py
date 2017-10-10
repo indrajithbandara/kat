@@ -65,7 +65,8 @@ class TalkBack(Plugin):
         """
         Deletes the most recent message I have sent using the `Name: text` syntax.
 
-        I store up to the last 100 messages sent. If I shut down for any reason, this list is reset. Any messages that have had more than 100 messages sent since cannot be deleted by this command.
+        I store up to the last 100 messages sent. If I shut down for any reason, this list is reset. Any messages that\\
+        have had more than 100 messages sent since cannot be deleted by this command.
 
         This is only runnable by a valid commander.
         """
@@ -84,9 +85,11 @@ class TalkBack(Plugin):
     @helpers.is_commander
     def edit(self, event, *, text):
         """
-        Edits the most recent message I sent via the `Name: text` syntax. Whatever is given after this command will be interpreted as the replacement message. Be warned, this cannot be undone.
+        Edits the most recent message I sent via the `Name: text` syntax. Whatever is given after this command will be\\
+        interpreted as the replacement message. Be warned, this cannot be undone.
 
-        I store up to the last 100 messages sent. If I shut down for any reason, this list is reset. Any messages that have had more than 100 messages sent since cannot be edited by this command.
+        I store up to the last 100 messages sent. If I shut down for any reason, this list is reset. Any messages that\\
+        have had more than 100 messages sent since cannot be edited by this command.
 
         This is only runnable by a valid commander.
         """

@@ -1,6 +1,7 @@
 from disco.api.http import APIException
 from disco.bot import Plugin
 from disco.types import message
+from disco.types import user
 from kat import plugins
 from kat.utils import helpers
 from kat.utils import katconfig
@@ -25,11 +26,10 @@ class Me(Plugin):
         my_member = event.guild.get_member(self.state.me)
 
         # Delete the message
-        event.msg.delete()
-
         self.log.info(f'Changing nickname in {event.guild.name} from {my_member.nick} to {args}')
 
         my_member.set_nickname(args)
+        event.msg.delete()
 
     @Plugin.command('nickall')
     @helpers.is_commander
@@ -46,9 +46,6 @@ class Me(Plugin):
 
         args = ' '.join(event.args) if event.args else None
 
-        # Delete the message
-        event.msg.delete()
-
         # Start typing to show working
         helpers.start_typing(self.bot, event.channel)
 
@@ -63,7 +60,10 @@ class Me(Plugin):
 
             successes += 1
 
-        reply_message = event.channel.send_message(f'Changed my nickname on {successes}/{total} guilds.')
+        reply_message = event.author.open_dm().send_message(f'Changed my nickname on {successes}/{total} guilds.')
+
+        # Delete the command message
+        event.msg.delete()
 
         sleep(10)
 
@@ -77,8 +77,6 @@ class Me(Plugin):
 
         This is only runnable by a valid commander.
         """
-
-        event.msg.delete()
 
         guild_count = len(self.state.guilds.values())
 
@@ -114,7 +112,12 @@ class Me(Plugin):
                               '5. How strict the server settings are. \n'
                               '6. Whether multiple-factor authorisation is set or not.')
 
-        event.channel.send_message(embed=embed)
+        try:
+            event.channel.send_message(embed=embed)
+        except APIException:  # e.g. missing permissions
+            event.author.open_dm().send_message(embed=embed)
+        finally:
+            event.msg.delete()
 
     @Plugin.command('perms')
     @helpers.is_commander
@@ -123,14 +126,13 @@ class Me(Plugin):
         """
         Shows the permissions for the guild you are calling this from for my user.
 
-        If I don't have permission to send messages in the channel you call this from, I will just DM you instead (hopefully).
+        If I don't have permission to send messages in the channel you call this from, I will just DM you instead
+        (hopefully).
 
-        This is only runnable by a valid identifier.
+        This is only runnable by a valid commander.
 
         This is only runnable in a guild.
         """
-
-        event.msg.delete()
 
         my_perms = event.guild.get_permissions(self.state.me)
         my_perms_dict = my_perms.to_dict()
@@ -148,6 +150,9 @@ class Me(Plugin):
         embed.description = 'The contents of this embed'
         embed.set_footer(text=f'Current bitfield permissions value: 2:{bin(my_perms_value)}; '
                               f'8:{oct(my_perms_value)}; 10:{my_perms_value}; 16:{hex(my_perms_value)}  .')
+
+        # Pull a random colour
+        embed.color = random.randint(0x0, 0xFFFFFF)
 
         main_perms_str = ''
 
@@ -189,6 +194,8 @@ class Me(Plugin):
             event.channel.send_message(embed=embed)
         except APIException:  # e.g. missing permissions
             event.author.open_dm().send_message(embed=embed)
+        finally:
+            event.msg.delete()
 
     @Plugin.command('kick', '<guild:snowflake>')
     @helpers.is_commander
@@ -196,7 +203,8 @@ class Me(Plugin):
         """
         Removes me from a given guild.
 
-        You must provide the guild as a snowflake ID number for this to work, as the developer is too lazy to do it any other way.
+        You must provide the guild as a snowflake ID number for this to work, as the developer is too lazy to do it \\
+        any other way.
 
         To find out the snowflake, you can run `whereami` and this will list the snowflakes for each guild I am in.
 
@@ -209,8 +217,10 @@ class Me(Plugin):
                 event.author.open_dm().send_message(f'I successfully left {guild_obj.name}')
             else:
                 event.author.open_dm().send_message(f'I could not find a guild with ID {guild}')
-        except Exception as ex:
+        except APIException as ex:
             event.author.open_dm().send_message(f'Something has gone wrong and a {ex} has occurred.')
+        finally:
+            event.msg.delete()
 
     @Plugin.command('invite')
     @helpers.is_commander
@@ -223,5 +233,28 @@ class Me(Plugin):
         This is only runnable by a valid commander.
         """
         url = helpers.generate_invite(katconfig.config.client_id, plugins.get_required_permissions())
-
+        event.msg.delete()
         event.author.open_dm().send_message(f'Here is a link to invite me:\n\n{url}')
+
+    @Plugin.command('status', '<status:str>')
+    @helpers.is_commander
+    def status(self, event, *, status):
+        """
+        Changes visibility of the bot.
+
+        This can be one of four values:
+        - `online` for Online (green).
+        - `away` for Away/AFK (yellow).
+        - `dnd` for Do Not Disturb (red).
+        - `invisible` for Offline/Invisible (grey).
+
+        This is only runnable by a valid commander, and will be reset if the bot is restarted.
+        """
+
+        uc_str_status = status.upper().strip()
+
+        if uc_str_status not in ('ONLINE', 'AWAY', 'DND', 'INVISIBLE'):
+            event.channel.send_message(f'{status} is an invalid visibility state.')
+        else:
+            self.client.update_presence(status=user.Status.get(uc_str_status))
+            event.msg.delete()

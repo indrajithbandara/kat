@@ -1,7 +1,17 @@
 {
-  "my_name": "Leon",
+  "my_name": "Katherine",
   "commanders": [
-    297447022028652544,
-    231946329440518145
+    1234,
+    4567
+  ],
+
+  "client_id": 123456,
+
+  "react_emotes": [
+    "rooLewd"
+  ],
+
+  "react_triggers": [
+    ":peach:"
   ]
 }

@@ -36,7 +36,7 @@ def find_all(predicate, collection):
             yield item
 
 
-def is_pythonic_ident(string: str):
+def is_python_identifier(string: str):
     """
     Determines whether the given string is a valid python identifier or not. If it is,
     we return True, otherwise, we return False.
