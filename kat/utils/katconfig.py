@@ -1,12 +1,8 @@
-from kat.utils import helpers
 import json
 from kat.utils.helpers import is_pythonic_ident
 import logging
 import os
 
-
-
-print(dir(helpers))
 
 def __load_config():
     cfg_file = os.getenv('kat_cfg_file')

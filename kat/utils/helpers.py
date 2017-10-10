@@ -71,6 +71,24 @@ def start_typing(bot, channel):
     bot.client.api.channels_typing(channel.id)
 
 
+def generate_invite(client_id, permissions_bits=None):
+    """
+    Generates an invite URL.
+
+    :param client_id: The client ID to use. This is a snowflake.
+    :param permissions_bits: optional. This should be a bitfield of permissions to require, if specified.
+
+    See https://discordapp.com/developers/docs/topics/permissions#permissions-bitwise-permission-flags for
+    info on these bitfields.
+    """
+
+    url = f'https://discordapp.com/oauth2/authorize?&client_id={client_id}&scope=bot'
+
+    if permissions_bits is not None:
+        url += f'&permissions={permissions_bits}'
+
+    return url
+
 ###############################################################################
 #                                                                             #
 # DECORATORS FOR EVENT HANDLERS                                               #
@@ -96,17 +114,17 @@ def is_commander(func):
             author = event.msg.author
         else:
             logger.error(f'Could not get an author attribute from the event in {func.__name__}. '
-                           f'This event interface provides the following members: {dir(event)}. '
-                           'Aborting for safety.')
+                         f'This event interface provides the following members: {dir(event)}. '
+                         'Aborting for safety.')
             return
 
         if author in katconfig.config.commanders:
             logger.debug(f'In is_commander decorator for {func.__module__}.{func.__name__}; author {author} IS '
-                           f'commander.')
+                         f'commander.')
             func(self, event, *args, **kwargs)
         else:
             logger.debug(f'In is_commander decorator for {func.__module__}.{func.__name__}; author {author} NOT '
-                           f'commander.')
+                         f'commander.')
 
     pred.__name__ = func.__name__
     pred.__doc__ = func.__doc__
@@ -122,8 +140,8 @@ def is_in_guild(func):
     def pred(self=None, event=None, *args, **kwargs):
         if not hasattr(event, 'guild'):
             logger.error(f'Could not get guild attribute from the event in {func.__name__}. '
-                           f'This event interface provides the following members: {dir(event)}. '
-                           'Aborting for safety.')
+                         f'This event interface provides the following members: {dir(event)}. '
+                         'Aborting for safety.')
             return
 
         if event.guild is not None:
@@ -131,6 +149,7 @@ def is_in_guild(func):
             func(self, event, *args, **kwargs)
         else:
             logger.debug(f'In is_guild decorator for {func.__module__}.{func.__name__}; message NOT in valid guild.')
+            return
 
     pred.__name__ = func.__name__
     pred.__doc__ = func.__doc__
@@ -155,7 +174,7 @@ class Debugging(object):
     def dump_args_decorator(func):
         def pred(*args, **kwargs):
             logging.info(f'Parameter dump for {func.__module__}.{func.__name__}(...)')
-            Debugging.dump_args(*args, **kwargs)
+            Debugging.dump_args(*args, *(kwargs.values()))
             func(*args, **kwargs)
 
         pred.__name__ = func.__name__
@@ -163,7 +182,7 @@ class Debugging(object):
         return pred
 
     # noinspection PyBroadException
-    def dump_args(*args, **kwargs):
+    def dump_args(*args):
 
         output = '\n'
         is_first = True
@@ -179,6 +198,7 @@ class Debugging(object):
 
             # Find the longest member name, and use that as our fixed width
             longest = 0
+
             for member in dir(arg):
                 if longest < len(member):
                     longest = len(member)
@@ -188,7 +208,7 @@ class Debugging(object):
 
                 try:
                     output += f'{type(arg.__getattribute__(member))}\n'
-                except:
+                except AttributeError:
                     output += '<Unavailable>\n'
 
             param_no += 1

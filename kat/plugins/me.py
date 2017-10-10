@@ -1,6 +1,7 @@
 from disco.api.http import APIException
 from disco.bot import Plugin
 from disco.types import message
+from kat import plugins
 from kat.utils import helpers
 from kat.utils import katconfig
 from time import sleep
@@ -12,7 +13,13 @@ class Me(Plugin):
     @helpers.is_commander
     @helpers.is_in_guild
     def nick(self, event):
-        """Changes my nickname on the current guild you run this from."""
+        """
+        Changes my nickname on the current guild you run this from.
+
+        This is only runnable by a valid commander.
+
+        This is only runnable in a guild.
+        """
 
         args = ' '.join(event.args) if event.args else None
         my_member = event.guild.get_member(self.state.me)
@@ -27,7 +34,11 @@ class Me(Plugin):
     @Plugin.command('nickall')
     @helpers.is_commander
     def nick_all(self, event):
-        """Changes my nickname on all guilds I am in."""
+        """
+        Changes my nickname on __all__ guilds I am in.
+
+        This is only runnable by a valid commander.
+        """
 
         # If not a commander.
         if event.author not in katconfig.config.commanders:
@@ -61,7 +72,11 @@ class Me(Plugin):
     @Plugin.command('whereami')
     @helpers.is_commander
     def where_am_i(self, event):
-        """Shows a list of guilds I am a member in."""
+        """
+        Shows a list of guilds I am a member in.
+
+        This is only runnable by a valid commander.
+        """
 
         event.msg.delete()
 
@@ -108,8 +123,11 @@ class Me(Plugin):
         """
         Shows the permissions for the guild you are calling this from for my user.
 
-        If I don't have permission to send messages in the channel you call this from, I will just DM you
-        instead (hopefully).
+        If I don't have permission to send messages in the channel you call this from, I will just DM you instead (hopefully).
+
+        This is only runnable by a valid identifier.
+
+        This is only runnable in a guild.
         """
 
         event.msg.delete()
@@ -172,3 +190,38 @@ class Me(Plugin):
         except APIException:  # e.g. missing permissions
             event.author.open_dm().send_message(embed=embed)
 
+    @Plugin.command('kick', '<guild:snowflake>')
+    @helpers.is_commander
+    def kick(self, event, *, guild):
+        """
+        Removes me from a given guild.
+
+        You must provide the guild as a snowflake ID number for this to work, as the developer is too lazy to do it any other way.
+
+        To find out the snowflake, you can run `whereami` and this will list the snowflakes for each guild I am in.
+
+        This is only runnable by a valid commander.
+        """
+        try:
+            if guild in self.state.guilds:
+                guild_obj = self.state.guilds[guild]
+                guild_obj.leave()
+                event.author.open_dm().send_message(f'I successfully left {guild_obj.name}')
+            else:
+                event.author.open_dm().send_message(f'I could not find a guild with ID {guild}')
+        except Exception as ex:
+            event.author.open_dm().send_message(f'Something has gone wrong and a {ex} has occurred.')
+
+    @Plugin.command('invite')
+    @helpers.is_commander
+    def invite(self, event):
+        """
+        Generates a link to use to invite me to a new guild.
+
+        This is sent to you via DM.
+
+        This is only runnable by a valid commander.
+        """
+        url = helpers.generate_invite(katconfig.config.client_id, plugins.get_required_permissions())
+
+        event.author.open_dm().send_message(f'Here is a link to invite me:\n\n{url}')

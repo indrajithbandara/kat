@@ -50,7 +50,6 @@ class TalkBack(Plugin):
                 self.message_dequeue.popleft()
 
     @Plugin.listen('MessageDelete')
-    @helpers.Debugging.dump_args_decorator
     def on_message_delete(self, event):
         """If a message is deleted and it is in our queue, remove it, this prevents errors later."""
         msg = helpers.find(lambda m: m.id == event.id, self.message_dequeue)
@@ -63,6 +62,13 @@ class TalkBack(Plugin):
     @Plugin.command('delete')
     @helpers.is_commander
     def delete(self, event):
+        """
+        Deletes the most recent message I have sent using the `Name: text` syntax.
+
+        I store up to the last 100 messages sent. If I shut down for any reason, this list is reset. Any messages that have had more than 100 messages sent since cannot be deleted by this command.
+
+        This is only runnable by a valid commander.
+        """
         if len(self.message_dequeue) > 0:
             self.log.info('Attempting to delete most recent message.')
             try:
@@ -74,13 +80,21 @@ class TalkBack(Plugin):
             finally:
                 event.msg.delete()
 
-    @Plugin.command('edit')
+    @Plugin.command('edit', '<text:str...>')
     @helpers.is_commander
-    def edit(self, event):
+    def edit(self, event, *, text):
+        """
+        Edits the most recent message I sent via the `Name: text` syntax. Whatever is given after this command will be interpreted as the replacement message. Be warned, this cannot be undone.
+
+        I store up to the last 100 messages sent. If I shut down for any reason, this list is reset. Any messages that have had more than 100 messages sent since cannot be edited by this command.
+
+        This is only runnable by a valid commander.
+        """
+
         if len(self.message_dequeue) > 0:
             self.log.info('Attempting to edit most recent message.')
             try:
-                self.message_dequeue.pop().edit(' '.join(event.args))
+                self.message_dequeue.pop().edit(text)
                 self.log.info('Edited message successfully.')
             except APIException as ex:
                 self.log.warning('I couldn\'t edit said message. I might not have permission, or the message may '

@@ -2,6 +2,7 @@ from disco.bot import Plugin
 from disco.types import message
 from kat.utils import helpers
 
+
 class Help(Plugin):
 
     @Plugin.command('help')
@@ -12,6 +13,8 @@ class Help(Plugin):
 
         `help`
         Lists all available commands. These will likely include commands that you __do not__ have access to.
+
+        This command is runnable by any user.
         """
 
         if event.args:
