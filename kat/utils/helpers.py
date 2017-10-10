@@ -1,8 +1,7 @@
-from kat.utils import katconfig
 import logging
 import re
 
-__logger = logging.getLogger('helpers')
+logger = logging.getLogger('helpers')
 
 
 ###############################################################################
@@ -37,7 +36,7 @@ def find_all(predicate, collection):
             yield item
 
 
-def is_valid_identifier(string: str):
+def is_pythonic_ident(string: str):
     """
     Determines whether the given string is a valid python identifier or not. If it is,
     we return True, otherwise, we return False.
@@ -80,6 +79,7 @@ def start_typing(bot, channel):
 
 
 def is_commander(func):
+    from kat.utils import katconfig
     """
     Decorator that will only invoke the given event if the context's author is
     in the commanders list of the bot.
@@ -95,17 +95,17 @@ def is_commander(func):
         elif hasattr(event, 'msg'):
             author = event.msg.author
         else:
-            __logger.error(f'Could not get an author attribute from the event in {func.__name__}. '
+            logger.error(f'Could not get an author attribute from the event in {func.__name__}. '
                            f'This event interface provides the following members: {dir(event)}. '
                            'Aborting for safety.')
             return
 
         if author in katconfig.config.commanders:
-            __logger.debug(f'In is_commander decorator for {func.__module__}.{func.__name__}; author {author} IS '
+            logger.debug(f'In is_commander decorator for {func.__module__}.{func.__name__}; author {author} IS '
                            f'commander.')
             func(self, event, *args, **kwargs)
         else:
-            __logger.debug(f'In is_commander decorator for {func.__module__}.{func.__name__}; author {author} NOT '
+            logger.debug(f'In is_commander decorator for {func.__module__}.{func.__name__}; author {author} NOT '
                            f'commander.')
 
     pred.__name__ = func.__name__
@@ -121,16 +121,16 @@ def is_in_guild(func):
 
     def pred(self=None, event=None, *args, **kwargs):
         if not hasattr(event, 'guild'):
-            __logger.error(f'Could not get guild attribute from the event in {func.__name__}. '
+            logger.error(f'Could not get guild attribute from the event in {func.__name__}. '
                            f'This event interface provides the following members: {dir(event)}. '
                            'Aborting for safety.')
             return
 
         if event.guild is not None:
-            __logger.debug(f'In is_guild decorator for {func.__module__}.{func.__name__}; message IS in valid guild.')
+            logger.debug(f'In is_guild decorator for {func.__module__}.{func.__name__}; message IS in valid guild.')
             func(self, event, *args, **kwargs)
         else:
-            __logger.debug(f'In is_guild decorator for {func.__module__}.{func.__name__}; message NOT in valid guild.')
+            logger.debug(f'In is_guild decorator for {func.__module__}.{func.__name__}; message NOT in valid guild.')
 
     pred.__name__ = func.__name__
     pred.__doc__ = func.__doc__

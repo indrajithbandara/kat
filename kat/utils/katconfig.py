@@ -1,8 +1,12 @@
-import json
 from kat.utils import helpers
+import json
+from kat.utils.helpers import is_pythonic_ident
 import logging
 import os
 
+
+
+print(dir(helpers))
 
 def __load_config():
     cfg_file = os.getenv('kat_cfg_file')
@@ -20,7 +24,7 @@ def __load_config():
 
             for key in _config.keys():
                 # Ensure that none of the keys contain strange or illegal characters.
-                if not helpers.is_valid_identifier(key):
+                if not is_pythonic_ident(key):
                     logger.error(f'In \'{cfg_file}\', key \'{key}\' contains illegal characters, or is a Python3.6 '
                                  'reserve word. Please fix this and try again!')
                     exit(2)
