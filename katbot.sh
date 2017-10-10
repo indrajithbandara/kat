@@ -16,7 +16,7 @@ export kat_cfg_file=$(readlink -f ${kat_cfg_file})
 
 if [[ $(whoami) == "root" ]]; then
     echo -e "\e[0;31mWarning! You are running the bot as root! Probably should think about this first...\e[0m"
-    exit 1
+#    exit 1
 fi
 
 function chk_dep() {

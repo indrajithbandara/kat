@@ -1,0 +1,16 @@
+# Place this in /etc/systemd/system
+# then run
+# systemctl daemon-reload
+# systemctl start kat.service
+[Unit]
+Description=Kat's Kat7 Discord Bot Daemon
+
+[Service]
+Type=simple
+PIDFile=/var/run/kat7-kat.pid
+ExecStart=/home/discord/kat7/kat/katbot
+Restart=always
+User=discord
+
+[Install]
+WantedBy=multi-user.target
