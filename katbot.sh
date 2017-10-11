@@ -19,45 +19,53 @@ if [[ $(whoami) == "root" ]]; then
 #    exit 1
 fi
 
-function chk_dep() {
-    dependency=$1
-    printf "\e[0;34m%-60s" "  Checking that ${dependency} is installed..."
-    grep -iq ${dependency} <<< $(${py_36} -m pip list --format=legacy)
-    if [[ $? == 0 ]]; then
-        echo -e "\e[1;4;32mInstalled\e[0;35m $(${py_36} -m pip show ${dependency} | grep -oP '^Version: .*$')\e[0m"
-    else
-        echo -e "\e[1;4;31mNot Installed\e[0;37m"
-        ${py_36} -m pip install --user ${dependency}
-        echo -en "\e[0m"
 
-        if [[ $? != 0 ]]; then
-            exit_code=$?
-            echo "An error has occurred, dependencies are not met."
-            echo "Can not continue!!"
-            exit ${exit_code}
+# If no first arg is supplied, perform all checks. Otherwise skip checks to start the bot quickly.
+if [ -z "$1" ]; then
+    function chk_dep() {
+        dependency=$1
+        printf "\e[0;34m%-60s" "  Checking that ${dependency} is installed..."
+        grep -iq ${dependency} <<< $(${py_36} -m pip list --format=legacy)
+        if [[ $? == 0 ]]; then
+            echo -e "\e[1;4;32mInstalled\e[0;35m $(${py_36} -m pip show ${dependency} | grep -oP '^Version: .*$')\e[0m"
         else
-            chk_dep ${dependency}
+            echo -e "\e[1;4;31mNot Installed\e[0;37m"
+            ${py_36} -m pip install --user ${dependency}
+            echo -en "\e[0m"
+
+            if [[ $? != 0 ]]; then
+                exit_code=$?
+                echo "An error has occurred, dependencies are not met."
+                echo "Can not continue!!"
+                exit ${exit_code}
+            else
+                chk_dep ${dependency}
+            fi
         fi
-    fi
-}
 
-echo -e "\e[1;33mChecking dependencies are met.\e[0m"
-for dependency in ${dependencies[@]}; do
-    chk_dep ${dependency}
-done
+    }
 
-echo
+    echo -e "\e[1;33mChecking dependencies are met.\e[0m"
+    for dependency in ${dependencies[@]}; do
+        chk_dep ${dependency}
+    done
 
-# Make sure all configuration files exist.
-for f in $(find templates -type f | xargs); do
-    name=$(basename ${f})
+    echo
 
-    echo -en "\e[36m"
-    if [ ! -f ${name} ]; then
-        cp ${f} ${name} -v
-    fi
-    echo -en "\e[0m"
-done
+
+    # Make sure all configuration files exist.
+    for f in $(find templates -type f | xargs); do
+        name=$(basename ${f})
+
+        echo -en "\e[36m"
+        if [ ! -f ${name} ]; then
+            cp ${f} ${name} -v
+        fi
+        echo -en "\e[0m"
+    done
+else
+    echo "Skipping bot checks and starting the bot quickly."
+fi
 
 echo -e "\e[1;33m"
 echo "Starting bot."
