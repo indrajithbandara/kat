@@ -4,3 +4,6 @@ __pycache__
 disco_config.yaml
 kat_config.json
 *.iml
+leonbot
+katbot
+*.service
