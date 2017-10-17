@@ -71,7 +71,7 @@ class React(Plugin):
             for regex in self.trigger_words:
                 if regex.match(event.message.content):
 
-                    if random.random() < 0.2:
+                    if random.random() < 0.1:
                         self.log.debug(f'Matched message "{event.message.content}" on pattern "{regex}". Adding react.')
 
                         try:
