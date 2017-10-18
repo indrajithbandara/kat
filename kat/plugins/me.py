@@ -120,7 +120,6 @@ class Me(Plugin):
             event.msg.delete()
 
     @Plugin.command('perms')
-    @helpers.is_commander
     @helpers.is_in_guild
     def perms(self, event):
         """
@@ -129,7 +128,8 @@ class Me(Plugin):
         If I don't have permission to send messages in the channel you call this from, I will just DM you instead
         (hopefully).
 
-        This is only runnable by a valid commander.
+        ~~This is only runnable by a valid commander.~~
+        ***__Edit in v7.0.2:__*** This command is now runnable by anyone in the guild.
 
         This is only runnable in a guild.
         """
@@ -197,6 +197,24 @@ class Me(Plugin):
         finally:
             event.msg.delete()
 
+    @Plugin.command('guildsnowflake')
+    @helpers.is_in_guild
+    def guild_snowflake(self, event):
+        """
+        Replies with the snowflake ID for this guild. This is useful if calling the "kick" \\
+        command. This will reply to the message in the channel you send it, however, so if \\
+        you want to kick me quietly, try calling the `whereami` command instead in a DM.
+
+        This is runnable by anyone on the server.
+        """
+        snowflake = event.guild.id
+
+        event.channel.send_message(str(snowflake))
+
+        event.channel.send_message('See `whereami` and `perms` for more details about my permissions '
+                                   'and location!')
+        
+
     @Plugin.command('kick', '<guild:snowflake>')
     @helpers.is_commander
     def kick(self, event, *, guild):
@@ -232,9 +250,30 @@ class Me(Plugin):
 
         This is only runnable by a valid commander.
         """
-        url = helpers.generate_invite(katconfig.config.client_id, plugins.get_required_permissions())
+        role_url = helpers.generate_invite(katconfig.config.client_id, plugins.get_required_permissions())
+        norole_url = helpers.generate_invite(katconfig.config.client_id, None)
+
+        msg = ('**Invitation links:**\n\n'
+               'To get started quickly, I will create a role with the correct permissions already set up. '
+               'You will not be able to delete this role without kicking me from the guild first, however.'
+               '\n\n'
+               f'The link to do this is: {role_url}\n\n'
+               'Alternatively, I can join a guild without adding any role or permissions. In this case, it '
+               'will be up to you to give me the correct permissions. These are generally:\n'
+               ' - reading messages;\n'
+               ' - reading message history;\n'
+               ' - sending messages;\n'
+               ' - managing messages (to enable me to delete your messages for RP commands;\n'
+               ' - adding reactions (not required, but recommended nonetheless);\n'
+               ' - using external emojis (required if you are allowing reactions).\n\n'
+               f'The link for this option is: {norole_url}\n\n'
+               'Generally, if you don\'t know which one to go for, pick the first one, as this will set '
+               'everything up for you. If you have an existing role to manage my permissions, then choose '
+               'the second option. This might be useful if you have multiple instances of my software on '
+               'the same guild!')
+
         event.msg.delete()
-        event.author.open_dm().send_message(f'Here is a link to invite me:\n\n{url}')
+        event.author.open_dm().send_message(msg)
 
     @Plugin.command('status', '<status:str>')
     @helpers.is_commander
@@ -244,11 +283,14 @@ class Me(Plugin):
 
         This can be one of four values:
         - `online` for Online (green).
-        - `away` for Away/AFK (yellow).
+        - `away` for Away/AFK (yellow).\*
         - `dnd` for Do Not Disturb (red).
         - `invisible` for Offline/Invisible (grey).
 
         This is only runnable by a valid commander, and will be reset if the bot is restarted.
+
+        \* Note: this state doesn't seem to work correctly currently. I (the developer) will \\
+        attempt to fix this at some point when I have a little more time.
         """
 
         uc_str_status = status.upper().strip()
@@ -258,3 +300,29 @@ class Me(Plugin):
         else:
             self.client.update_presence(status=user.Status.get(uc_str_status))
             event.msg.delete()
+
+    @Plugin.command('explain')
+    @helpers.is_in_guild
+    def explain(self, event):
+        """
+        Returns an explaination of how I work, since a few people keep asking.
+        """
+
+        explaination = ('I am a Discord Bot used for RPing!\n\n'
+                        'I will automatically react to messages containing certain words and '
+                        'I have a few commands up my sleeve. Commands are called by mentioning '
+                        'me first, and then putting the command (e.g. `@Kat#1234 help`).\n\n'
+                        'I am also controllable by specific commanders. These are users that '
+                        'are authorised to use me specifically.\n\n'
+                        'I will listen to every message that is sent on this guild. If one is '
+                        'sent by a user on my commander list, then I will check to see if it '
+                        f'starts with "{katconfig.config.my_name.title()}:". If it does, then '
+                        'I will first delete the message as quickly as I can. I will then start '
+                        'typing out the message that they sent (minus the '
+                        f'"{katconfig.config.my_name.title()}:" bit at the start), '
+                        'and I will then send the message as myself. This gives the illusion '
+                        'that I sent the message myself without being told to do it!\n\n'
+                        'If you want to know more, run the `version` command. In the output '
+                        'there will be a link to the repository with all my code in it.')
+        
+        event.channel.send_message(explaination)

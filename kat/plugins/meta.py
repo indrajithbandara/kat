@@ -16,21 +16,23 @@ from kat import __date__
 from kat import __repository__
 from kat.utils import katconfig
 
-meta = {
+version_meta = {
     'License': __license__,
     'Author': __author__,
     'Copyright': __copyright__,
     'Credits': ', '.join(__credits__),
     'Maintainer': __maintainer__,
-    'Email': __email__,
+    'Email': __email__
+}
+
+system_meta = {
     'Processor': platform.processor(),
     'Machine': platform.machine(),
     'System': f'{platform.system()} {platform.release()} {platform.version()}',
     'Platform': platform.platform(),
     'disco-py library version': disco.VERSION,
     'Python version': platform.python_version(),
-    'Python revision': platform.python_revision(),
-    'Python implementation': platform.python_implementation(),
+    'Python implementation': platform.python_implementation()
 }
 
 
@@ -50,12 +52,19 @@ class Meta(Plugin):
 
         embed.set_image(url=self.state.me.avatar_url)
 
-        for key in meta.keys():
-            value = meta[key]
+        for key in version_meta.keys():
+            value = version_meta[key]
+            if not value:
+                value = '_Not specified_'
+            embed.add_field(name=key, value=value, inline=False)
+
+        for key in system_meta.keys():
+            value = system_meta[key]
             if not value:
                 value = '_Not specified_'
             embed.add_field(name=key, value=value, inline=True)
 
+        # Purrloin purple.
         embed.color = 0xD200FF
 
         event.channel.send_message(embed=embed)
