@@ -214,6 +214,18 @@ class Me(Plugin):
         event.channel.send_message('See `whereami` and `perms` for more details about my permissions '
                                    'and location!')
         
+    @Plugin.command('mysnowflake')
+    @helpers.is_in_guild
+    def guild_snowflake(self, event):
+        """
+        Gets the snowflake ID for the given author.
+
+        This is runnable by anyone on the server.
+        """
+        snowflake = event.author.id
+
+        event.channel.send_message(f'Your snowflake ID is: {snowflake}')
+
 
     @Plugin.command('kick', '<guild:snowflake>')
     @helpers.is_commander
