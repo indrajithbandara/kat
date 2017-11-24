@@ -332,8 +332,8 @@ class Me(Plugin):
                 self.log.info(f'Looking up {commander_id}...')
                 member = event.guild.get_member(commander_id)
                 members_str += \
-                        (f' - {member.name} '
-                         f'{f"a.k.a. {member.nick}" if member.nick else ""}'
+                        (f' - {member.user} '
+                         f'{f"a.k.a. {member.nick}" if member.nick != str(member.user) else ""}'
                          f' (joined this guild on {member.joined_at.strftime("%Y-%m-%d %H:%M")}).\n')
             except Exception as ex:
                 self.log.error(ex)
