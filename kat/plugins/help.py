@@ -1,9 +1,9 @@
+import inspect
 import random
 
 from disco.bot import Plugin
 from disco.types import message
 from kat.utils import helpers
-
 
 class Help(Plugin):
 
@@ -60,20 +60,8 @@ class Help(Plugin):
             embed = message.MessageEmbed()
             embed.title = f'Documentation for `{command}`'
 
-            description = ''
-
-            # Removes the shit indentation that the docstrings create... Stupid python.
-            for line in actual_command.get_docstring().split('\n'):
-                strip_ln = line.strip()
-
-                # Allows us to put '\' at the end of a line to escape the newline. We instead append a space.
-                if strip_ln.endswith('\\'):
-                    # Remember to r-strip any spaces away after removing the delimiter
-                    description += strip_ln[:-1].rstrip()
-                    description += ' '
-                else:
-                    description += strip_ln
-                    description += '\n'
+            # I learnt that this is a thing.
+            description = inspect.cleandoc(actual_command.get_docstring())
 
             embed.description = description
 

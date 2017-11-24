@@ -2,8 +2,8 @@ import logging
 import disco
 import platform
 
-__version__ = '7.0.3'
-__revision__ = '4'
+__version__ = '7.0.4'
+__revision__ = '5'
 __license__ = 'BSD 2-Clause License'
 __author__ = 'TheRooChan'
 __copyright__ = 'Copyright (c) 2017, TheRooChan, Eevee'

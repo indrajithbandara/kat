@@ -216,7 +216,7 @@ class Me(Plugin):
         
     @Plugin.command('mysnowflake')
     @helpers.is_in_guild
-    def guild_snowflake(self, event):
+    def my_snowflake(self, event):
         """
         Gets the snowflake ID for the given author.
 
@@ -225,7 +225,6 @@ class Me(Plugin):
         snowflake = event.author.id
 
         event.channel.send_message(f'Your snowflake ID is: {snowflake}')
-
 
     @Plugin.command('kick', '<guild:snowflake>')
     @helpers.is_commander
@@ -295,23 +294,53 @@ class Me(Plugin):
 
         This can be one of four values:
         - `online` for Online (green).
-        - `away` for Away/AFK (yellow).\*
+        - ~~`away` for Away/AFK (yellow).\*~~
+        - `idle` for Away/AFK (yellow).
         - `dnd` for Do Not Disturb (red).
         - `invisible` for Offline/Invisible (grey).
 
         This is only runnable by a valid commander, and will be reset if the bot is restarted.
 
-        \* Note: this state doesn't seem to work correctly currently. I (the developer) will \\
-        attempt to fix this at some point when I have a little more time.
+        ~~\* Note: this state doesn't seem to work correctly currently. I (the developer) will \\
+        attempt to fix this at some point when I have a little more time.~~
+        **Edit**: this has been repaired.
         """
 
         uc_str_status = status.upper().strip()
 
-        if uc_str_status not in ('ONLINE', 'AWAY', 'DND', 'INVISIBLE'):
+        if uc_str_status not in ('ONLINE', 'IDLE', 'DND', 'INVISIBLE'):
             event.channel.send_message(f'{status} is an invalid visibility state.')
         else:
             self.client.update_presence(status=user.Status.get(uc_str_status))
             event.msg.delete()
+
+    @Plugin.command('whocontrols')
+    @helpers.is_commander
+    @helpers.is_in_guild
+    def who_controls_me(self, event):
+        """
+        Replies with whom'st've'd has current commander control for this bot.
+
+        Only callable by the commanders in this guild, and it will only expose
+        details for members __in__ this guild.
+        """
+        self.log.info('Whocontrols req.')
+        members_str = ''
+
+        for commander_id in katconfig.config.commanders:
+            try:
+                self.log.info(f'Looking up {commander_id}...')
+                member = event.guild.get_member(commander_id)
+                members_str += \
+                        (f' - {member.name} '
+                         f'{f"a.k.a. {member.nick}" if member.nick else ""}'
+                         f' (joined this guild on {member.joined_at.strftime("%Y-%m-%d %H:%M")}).\n')
+            except Exception as ex:
+                self.log.error(ex)
+                members_str += f' - `{commander_id}` = Someone not on this server.\n'
+
+        event.channel.send_message(f'Commanders are:\n\n{members_str}')
+        event.msg.delete()
 
     @Plugin.command('explain')
     @helpers.is_in_guild
