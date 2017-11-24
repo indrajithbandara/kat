@@ -333,7 +333,7 @@ class Me(Plugin):
                 member = event.guild.get_member(commander_id)
                 members_str += \
                         (f' - {member.user} '
-                         f'{f"a.k.a. {member.nick}" if member.nick != str(member.user) else ""}'
+                         f'{f"a.k.a. {member.nick}" if member.nick and member.nick != str(member.user) else ""}'
                          f' (joined this guild on {member.joined_at.strftime("%Y-%m-%d %H:%M")}).\n')
             except Exception as ex:
                 self.log.error(ex)
