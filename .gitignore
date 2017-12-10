@@ -1,8 +1,10 @@
 __pycache__
 */__pycache__
 .idea
-disco_config.yaml
-kat_config.json
+*.yaml
+*.json
+*/*.yaml
+*/*.json
 *.iml
 leonbot
 katbot
